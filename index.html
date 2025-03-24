@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登入/註冊</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 h-screen flex items-center justify-center">
+    <div class="bg-white p-8 rounded-lg shadow-md w-96">
+        <div class="flex justify-center mb-8">
+            <img src="https://live.staticflickr.com/65535/54246386635_f95b7576c9_s.jpg" alt="Company Logo" class="w-24">
+        </div>
+        
+        <!-- 註冊表單 -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold mb-4 text-center">新用戶註冊</h2>
+            <form id="registerForm">
+                <div class="mb-4">
+                    <input type="text" id="registerUsername" placeholder="用戶名稱" required
+                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="mb-4">
+                    <input type="email" id="registerEmail" placeholder="電子郵件" required
+                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="mb-4">
+                    <input type="password" id="registerPassword" placeholder="密碼" required
+                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <button type="submit"
+                    class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-200">
+                    註冊
+                </button>
+                <div id="registerMessage" class="mt-2 text-center"></div>
+            </form>
+        </div>
+
+        <!-- 登入表單 -->
+        <div>
+            <h2 class="text-2xl font-bold mb-4 text-center">用戶登入</h2>
+            <form id="loginForm">
+                <div class="mb-4">
+                    <input type="email" id="loginEmail" placeholder="電子郵件" required
+                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="mb-4">
+                    <input type="password" id="loginPassword" placeholder="密碼" required
+                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <button type="submit"
+                    class="w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 transition duration-200">
+                    登入
+                </button>
+                <div id="loginMessage" class="mt-2 text-center"></div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = 
+        'https://script.google.com/macros/s/AKfycbyMxFJ312ERNKhfwHry35f1OB3WxmDP1mJsBqARyJeLfKAJ3qNoSGdM5Fx-XrhX2wHqaA/exec';
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('registerUsername').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const messageElement = document.getElementById('registerMessage');
+            
+            messageElement.innerHTML = '註冊處理中...';
+            messageElement.className = 'mt-2 text-center text-gray-600';
+
+            try {
+                // 使用JSONP方式處理跨域請求
+                const scriptId = 'register-script-' + Date.now();
+                let scriptElement = document.createElement('script');
+                scriptElement.id = scriptId;
+                scriptElement.src = `${SCRIPT_URL}?action=register&username=${encodeURIComponent(username)}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&callback=registerCallback&t=${Date.now()}`;
+                
+                // 定義回調函數
+                window.registerCallback = function(response) {
+                    if (response && response.status === 'success') {
+                        messageElement.innerHTML = '註冊成功！';
+                        messageElement.className = 'mt-2 text-center text-green-600';
+                        document.getElementById('registerForm').reset();
+                    } else {
+                        const errorMsg = response && response.error ? response.error : '註冊失敗，請稍後再試';
+                        messageElement.innerHTML = errorMsg;
+                        messageElement.className = 'mt-2 text-center text-red-600';
+                    }
+                    
+                    // 清理腳本元素
+                    const scriptToRemove = document.getElementById(scriptId);
+                    if (scriptToRemove) {
+                        scriptToRemove.parentNode.removeChild(scriptToRemove);
+                    }
+                };
+                
+                document.body.appendChild(scriptElement);
+            } catch (error) {
+                console.error('註冊錯誤:', error);
+                messageElement.innerHTML = '發生錯誤，請稍後再試';
+                messageElement.className = 'mt-2 text-center text-red-600';
+            }
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const messageElement = document.getElementById('loginMessage');
+            
+            messageElement.innerHTML = '登入處理中...';
+            messageElement.className = 'mt-2 text-center text-gray-600';
+
+            try {
+                // 使用JSONP方式處理跨域請求
+                const scriptId = 'login-script-' + Date.now();
+                let scriptElement = document.createElement('script');
+                scriptElement.id = scriptId;
+                scriptElement.src = `${SCRIPT_URL}?action=login&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&callback=loginCallback&t=${Date.now()}`;
+                
+                // 定義回調函數
+                window.loginCallback = function(response) {
+                    if (response && response.status === 'success') {
+                        messageElement.innerHTML = '登入成功！正在跳轉...';
+                        messageElement.className = 'mt-2 text-center text-green-600';
+                        setTimeout(() => {
+                            window.location.href = 'https://socialtaiwan.softr.app/';
+                        }, 1000);
+                    } else {
+                        const errorMsg = response && response.error ? response.error : '登入失敗，請檢查帳號密碼';
+                        messageElement.innerHTML = errorMsg;
+                        messageElement.className = 'mt-2 text-center text-red-600';
+                    }
+                    
+                    // 清理腳本元素
+                    const scriptToRemove = document.getElementById(scriptId);
+                    if (scriptToRemove) {
+                        scriptToRemove.parentNode.removeChild(scriptToRemove);
+                    }
+                };
+                
+                document.body.appendChild(scriptElement);
+            } catch (error) {
+                console.error('登入錯誤:', error);
+                messageElement.innerHTML = '發生錯誤，請稍後再試';
+                messageElement.className = 'mt-2 text-center text-red-600';
+            }
+        });
+    </script>
+</body>
+</html>
